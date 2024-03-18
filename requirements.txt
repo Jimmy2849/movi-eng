@@ -1,0 +1,8 @@
+altair
+numpy
+pandas
+pydeck
+streamlit
+streamlit_chat
+streamlit_annotation_tools
+kakaotrans
