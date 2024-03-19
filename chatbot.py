@@ -3,7 +3,7 @@ import streamlit as st
 import speech_recognition as sr
 
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="api_key")
 
 main_character = '/Users/ihoyeol/Desktop/moving/image/image5.jpeg'
 llm_character = '/Users/ihoyeol/Desktop/moving/image/image1.jpeg'
