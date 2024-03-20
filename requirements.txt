@@ -8,3 +8,5 @@ streamlit_annotation_tools
 kakaotrans
 openai-whisper
 setuptools-rust
+Gtts
+Playsound
