@@ -5,8 +5,8 @@ from playsound import playsound
 import os
 
 client = OpenAI(api_key="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")
-main_character = '메인케릭터 이미지 파일 주소'
-llm_character = 'GPT 캐릭터 이미지 파일 주소'
+main_character = 'movi-eng/image/image5.jpeg'
+llm_character = 'movi-eng/image/image1.jpeg'
 situation = "당신은 어두운 동굴에 갇혔습니다. GPT의 이름은 마인입니다. GPT가 당신의 조수로서 탈출을 돕습니다. 또한 GPT는 당신에게 반말로만 대할 것이며, 친절하지는 않습니다. 또한 영어로만 대화하며 영어 단어를 쉬운 수준으로 해줘."
 user_input_audio= ""
 
