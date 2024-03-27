@@ -2,7 +2,7 @@ import streamlit as st
 from Hello import text
 
 # 테마학습 및 채팅 페이지
-# 뭣하면 테마 선택도 빼고
+
 
 def load_token_from_local_storage():
     # 세션 상태에서 토큰을 불러오는 함수

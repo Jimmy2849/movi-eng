@@ -2,7 +2,7 @@
 import streamlit as st
 import requests
 import re
-from storyChat import story
+# from storyChat import story
 # from ragModel import ragmodel()
 
 #개인 학습 페이지
@@ -42,7 +42,7 @@ def Quiz(word):
         else:
             kolist.append(i)
     st.write(englist,kolist)
-    # 하나씩 뽑아서 문자열로 써야지 원...
+
 
 
 # 문장 교정
@@ -56,8 +56,6 @@ def load_token_from_local_storage():
 # 메인 실행
 def main():
     token = load_token_from_local_storage()
-    if st.button("다음"):
-        story()
 
     if token:
         st.success("로컬 스토리지에서 토큰을 성공적으로 불러왔습니다.")
