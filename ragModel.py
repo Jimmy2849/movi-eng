@@ -1,3 +1,4 @@
+# 아직 사용안하는 코드!
 from transformers import RagTokenizer, RagRetriever, RagTokenForGeneration
 
 def model(explanation):
