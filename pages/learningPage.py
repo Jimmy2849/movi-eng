@@ -2,7 +2,7 @@
 import streamlit as st
 import requests
 import re
-from page5 import page55
+from storyChat import story
 # from ragModel import ragmodel()
 
 #개인 학습 페이지
@@ -57,7 +57,7 @@ def load_token_from_local_storage():
 def main():
     token = load_token_from_local_storage()
     if st.button("다음"):
-        page55()
+        story()
 
     if token:
         st.success("로컬 스토리지에서 토큰을 성공적으로 불러왔습니다.")

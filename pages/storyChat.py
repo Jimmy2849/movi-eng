@@ -1,5 +1,4 @@
 import streamlit as st
-from test_chat import chat
 from Hello import text
 
 # 테마학습 및 채팅 페이지
@@ -10,7 +9,7 @@ def load_token_from_local_storage():
     return st.session_state.token if 'token' in st.session_state else None
 
 # 메인 실행
-def main():
+def story():
     token = load_token_from_local_storage()
 
     if token:
@@ -23,4 +22,4 @@ def main():
         st.write('로그인을 먼저 진행해주세요.')
 
 if __name__ == "__main__":
-    main()
+    story()
