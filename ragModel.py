@@ -14,3 +14,4 @@ def model(explanation):
 
 
 model("today")
+# 파인튜닝 진행
