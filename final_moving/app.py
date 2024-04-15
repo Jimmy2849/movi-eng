@@ -58,6 +58,7 @@ def UserLogin():
                 token = result.get('token')
                 save_token(token)
                 st.success("서버에서 토큰을 성공적으로 받아와 세션 상태에 저장했습니다.")
+                st.page_link("pages/1_main_page.py", label="메인 페이지 이동", icon="👐🏻")
 
                 username_input.empty()  # 닉네임 입력 필드 제거
                 login_button.empty()  # 로그인 버튼 제거
@@ -100,6 +101,7 @@ def main():
         if is_user_logged_in():
             # 로그인이 되어있는 경우
             st.success("이미 로그인되었습니다.")
+            st.page_link("pages/1_main_page.py", label="메인 페이지 이동", icon="👐🏻")
             # if st.button("로그아웃"):
             #     logout()
 
