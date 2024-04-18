@@ -1,10 +1,12 @@
 from django.http import JsonResponse
-from django.contrib.auth import User, authenticate, login
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User 
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 # 사용자가 입력한 username를 data로 받음, 응답으로 'success'와 'token'을 json으로 반환해야 함.
+# https://docs.djangoproject.com/en/5.0/ref/contrib/auth/#django.contrib.auth.models.User 
 
 @csrf_exempt
 def custom_signup(request):
@@ -23,14 +25,13 @@ def custom_signup(request):
     else:
         return JsonResponse({'error': 'Invalid request method.'}, status=405)
     
-
 def custom_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
-        token = request.POST.get('jwt_token')
+        password = request.POST.get('password')
 
         # 회원명을 기반으로 사용자를 검색합니다.
-        user = authenticate(username=username, token=token)
+        user = authenticate(username=username, password=password)
 
         if user is not None:
             # 사용자를 로그인합니다.

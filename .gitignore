@@ -1,4 +1,4 @@
-# Environments
+# Environments & Cache & Image
 .env
 .venv
 env/
@@ -7,3 +7,5 @@ myvenv/
 ENV/
 env.bak/
 venv.bak/
+__pycache__/
+project/final_moving/

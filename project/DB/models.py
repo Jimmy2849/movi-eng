@@ -28,4 +28,4 @@ class Dictionary(models.Model):
     
     class Meta:
         verbose_name = '사용자 사전'
-        # db_table =  # 미지정시 기본 이름 : <앱>_<클래스> -> db_user (전체 소문자)
+        # db_table =  # 미지정시 기본 이름 : <앱>_<클래스> -> db_dictionary (전체 소문자)
