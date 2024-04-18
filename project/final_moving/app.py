@@ -21,11 +21,12 @@ def is_user_logged_in():
 def userJoin():
     st.header("회원가입")
     username = st.text_input("닉네임을 입력하세요")
+    password = st.text_input("비밀번호를 입력하세요", type='password')
     if st.button("가입"):
         if not username:
             st.error("닉네임을 입력해주세요.")
             return
-        data = {'username': username}
+        data = {'username': username, 'password': password}
         response = requests.post(url + '/signup', data=data)
 
         if response.ok:
@@ -40,14 +41,16 @@ def userJoin():
 def UserLogin():
     header = st.header("로그인")
     username_input = st.empty()  # 닉네임 입력 필드를 넣을 빈 공간
+    pw_input = st.empty()
     login_button = st.empty()  # 로그인 버튼을 넣을 빈 공간
 
     username = username_input.text_input("닉네임을 입력하세요")
+    password = pw_input.text_input("비밀번호를 입력하세요", type='password')
     if login_button.button("로그인"):
         if not username:
             st.error("닉네임을 입력해주세요.")
             return
-        data = {'username': username}
+        data = {'username': username, 'password': password}
         response = requests.post(url + '/login/', data=data)
     
         if response.ok: # 상태코드가 400보다 작으면 True 반환. response.status_code로 확인.

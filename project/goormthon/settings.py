@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 import environ
+from datetime import timedelta
 
 from pathlib import Path
 
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'DB.apps.DbConfig',
     'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -141,5 +143,17 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # 액세스 토큰 유효 시간 (예: 15분)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),     # 리프레시 토큰 유효 시간 (예: 1일)
+    'ROTATE_REFRESH_TOKENS': False,                  # 리프레시 토큰 갱신 여부
+    'BLACKLIST_AFTER_ROTATION': False,               # 리프레시 토큰 갱신 후 기존 토큰 블랙리스트 설정 여부
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),  # 슬라이딩 토큰 유효 시간 (예: 5분)
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),  # 슬라이딩 토큰 갱신 시간 (예: 1일)
 }
