@@ -8,4 +8,5 @@ ENV/
 env.bak/
 venv.bak/
 __pycache__/
-project/final_moving/
+project/final_moving/image/
+project/final_moving/pages/
