@@ -1,8 +1,8 @@
 import streamlit as st
-
 import requests
 
 url = "http://localhost:3000"  # 장고 서버 URL
+app_url = '/db'
 
 st.set_page_config(
     page_title="Hello",
@@ -26,8 +26,11 @@ def userJoin():
         if not username:
             st.error("닉네임을 입력해주세요.")
             return
+        if not password:
+            st.error("비밀번호를 입력해주세요.")
+            return
         data = {'username': username, 'password': password}
-        response = requests.post(url + '/signup', data=data)
+        response = requests.post(url + app_url + '/signup/', data=data)
 
         if response.ok:
             result = response.json()
@@ -51,14 +54,13 @@ def UserLogin():
             st.error("닉네임을 입력해주세요.")
             return
         data = {'username': username, 'password': password}
-        response = requests.post(url + '/login/', data=data)
-    
+        response = requests.post(url + app_url + '/login/', data=data)
         if response.ok: # 상태코드가 400보다 작으면 True 반환. response.status_code로 확인.
             result = response.json()
             if result['success']:
                 st.success("로그인 성공")
-
-                token = result.get('token')
+                token_response = requests.post(url + 'api/token/', data=data) # 전달한 username, password를 인증정보로 갖는 simple_jwt 발급 
+                token = token_response.get('access') # token_response = {"access":<토큰값>, "refresh":<토큰값}
                 save_token(token)
                 st.success("서버에서 토큰을 성공적으로 받아와 세션 상태에 저장했습니다.")
                 st.page_link("pages/1_main_page.py", label="메인 페이지 이동", icon="👐🏻")
