@@ -1,17 +1,29 @@
 import streamlit as st
 import requests
+from streamlit_local_storage import LocalStorage
 
 url = "http://localhost:3000"  # 장고 서버 URL
 app_url = '/db'
+
 
 st.set_page_config(
     page_title="Hello",
     page_icon="👋",
 )
 
+# 로컬 스토리지 : https://pypi.org/project/streamlit-local-storage/
+@st.cache_resource
+def LocalStorageManager():
+    return LocalStorage()
+localS = LocalStorageManager()  
+
 # 토큰 저장
-def save_token(token):
-    st.session_state.token = token
+def save_token(access, refresh):
+    if 'token' not in st.session_state:
+        st.session_state['token'] = None
+    st.session_state['token'] = access
+    localS.setItem('access', access, key='access_token')
+    localS.setItem('refresh', refresh, key='refresh_token')
 
 def is_user_logged_in():
     # 세션 상태에 토큰이 있는지 확인하는 함수
@@ -101,15 +113,15 @@ def main():
     option = st.sidebar.selectbox(
         'Menu',
         ('로그인', '회원가입'))
-    
     if option == '로그인':
+        load_token()
+        # 토큰 decode하여 username으로 authenticate 수행
         if is_user_logged_in():
             # 로그인이 되어있는 경우
             st.success("이미 로그인되었습니다.")
             st.page_link("pages/1_main_page.py", label="메인 페이지 이동", icon="👐🏻")
-            # if st.button("로그아웃"):
-            #     logout()
-
+            if st.button("로그아웃"):
+                UserLogout()
         else:
             UserLogin()
     if option == '회원가입':
