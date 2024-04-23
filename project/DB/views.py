@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -24,7 +24,8 @@ def custom_signup(request):
         return JsonResponse({'success': True}, status=200)
     else:
         return JsonResponse({'error': 'Invalid request method.'}, status=405)
-    
+
+@csrf_exempt
 def custom_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -36,10 +37,16 @@ def custom_login(request):
         if user is not None:
             # 사용자를 로그인합니다.
             login(request, user)
-            token = get_token();
-            return JsonResponse({'success': True, 'token': token}, status=200)
+            return JsonResponse({'success': True}, status=200)
         else:
             return JsonResponse({'success': False, 'error': 'Invalid ID.'}, status=400)
 
     return JsonResponse({'success': False, 'error': 'Method not allowed.'}, status=405)
     
+@csrf_exempt
+def custom_logout(request):
+    if request.method == 'POST':
+        logout(request)
+        return JsonResponse({'success': True}, status=200)
+    else:
+        return JsonResponse({'success': False, 'error': 'Method not allowed.'}, status=405)

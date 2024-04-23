@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import time
 from streamlit_local_storage import LocalStorage
 
 url = "http://localhost:3000"  # 장고 서버 URL
@@ -20,19 +21,19 @@ localS = LocalStorageManager()
 # 토큰 저장
 def save_token(access, refresh):
     if 'token' not in st.session_state:
-        st.session_state['token'] = None
-    st.session_state['token'] = access
+        st.session_state.token = None   
+    st.session_state.token = access
     localS.setItem('access', access, key='access_token')
     localS.setItem('refresh', refresh, key='refresh_token')
 
 # 토큰 불러오기
 def load_token():
     if 'token' not in st.session_state:
-        st.session_state['token'] = None
+        st.session_state.token = None
     if 'access' in localS.getAll():
-        st.session_state['token'] = localS.getItem('access')
+        st.session_state.token = localS.getItem('access')
         return st.session_state.token
-    return
+    return None
 
 # 토큰 갱신
 def refresh_token():
@@ -59,9 +60,15 @@ def verify_token():
         else:
             return False
         
+# 토큰 삭제(로그아웃 시)
+def delete_token():
+    # st.cache_resource.clear()
+    localS.deleteAll()
+    del st.session_state.token
+
 def is_user_logged_in():
     # 세션 상태에 토큰이 있는지 확인하는 함수
-    return 'token' in st.session_state
+    return 'token' in st.session_state and st.session_state.token is not None
 
 # 회원가입 
 def userJoin():
@@ -107,22 +114,30 @@ def UserLogin():
         if response.ok: # 상태코드가 400보다 작으면 True 반환. response.status_code로 확인.
             result = response.json()
             if result['success']:
-                st.success("로그인 성공")
                 token_response = requests.post(url + '/api/token/', data=data).json() # 사용자의 username를 인증정보로 갖는 jwt 토큰 발급
-                print(f'발급 토큰 : {token_response}')
                 save_token(token_response['access'], token_response['refresh'])
+                st.success("로그인 성공")
                 st.success("서버에서 토큰을 성공적으로 받아와 저장했습니다.")
                 st.page_link("pages/1_main_page.py", label="메인 페이지 이동", icon="👐🏻")
+                header.empty()
                 username_input.empty()  # 닉네임 입력 필드 제거
                 pw_input.empty() # 비밀번호 입력 필드 제거
                 login_button.empty()  # 로그인 버튼 제거
-                header.empty()
+                st.experimental_rerun()
             else:
                 st.error("존재하지 않는 이름입니다.")
         else:
             st.error("존재하지 않는 이름입니다. 회원가입을 진행해주세요.")
 
-
+def UserLogout():
+    delete_token()
+    response = requests.post(url + app_url + '/logout/')
+    if response.ok:
+        st.success("로그아웃 되었습니다.")
+        st.query_params.clear()
+    else:
+        st.error("로그아웃에 실패하였습니다.")
+        
 # 로그아웃
 # def logout():
 #     token = load_token_from_local_storage() # 토큰 불러오기
@@ -146,22 +161,25 @@ def UserLogin():
 
 # 메인 실행
 def main():
-
+    token = load_token()
+    if token:
+        headers = {'Authorization': f'Bearer {token}'}
+        response = requests.post(url + '/my-protected-view/', headers=headers)
+    
     option = st.sidebar.selectbox(
         'Menu',
         ('로그인', '회원가입'))
+    logout_button = st.sidebar.empty()
+    logout_button.button('로그아웃', on_click=UserLogout, disabled=not is_user_logged_in())
     if option == '로그인':
-        load_token()
-        # 토큰 decode하여 username으로 authenticate 수행
         if is_user_logged_in():
             # 로그인이 되어있는 경우
             st.success("이미 로그인되었습니다.")
             st.page_link("pages/1_main_page.py", label="메인 페이지 이동", icon="👐🏻")
-            if st.button("로그아웃"):
-                UserLogout()
         else:
             UserLogin()
     if option == '회원가입':
+        logout_button.empty()
         userJoin()
 
 if __name__ == "__main__":
