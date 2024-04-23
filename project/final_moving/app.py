@@ -25,6 +25,15 @@ def save_token(access, refresh):
     localS.setItem('access', access, key='access_token')
     localS.setItem('refresh', refresh, key='refresh_token')
 
+# 토큰 불러오기
+def load_token():
+    if 'token' not in st.session_state:
+        st.session_state['token'] = None
+    if 'access' in localS.getAll():
+        st.session_state['token'] = localS.getItem('access')
+        return st.session_state.token
+    return
+
 def is_user_logged_in():
     # 세션 상태에 토큰이 있는지 확인하는 함수
     return 'token' in st.session_state
