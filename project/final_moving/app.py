@@ -34,6 +34,20 @@ def load_token():
         return st.session_state.token
     return
 
+# 토큰 갱신
+def refresh_token():
+    if 'refesh' in localS.getAll():
+        token = localS.getItem('refresh')
+        response = requests.post(url + '/api/token/refresh/', data={'refresh': token})
+        if response.ok:
+            result = response.json()
+            new_access = result['access']
+            new_refresh = result['refresh']
+            save_token(new_access, new_refresh)
+            st.success("새로운 토큰 발급 성공")
+    else:
+        st.error("토큰 새로고침 실패: 유효 토큰이 없습니다.")
+
 def is_user_logged_in():
     # 세션 상태에 토큰이 있는지 확인하는 함수
     return 'token' in st.session_state
