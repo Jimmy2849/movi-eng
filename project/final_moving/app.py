@@ -99,26 +99,29 @@ def UserLogin():
         if not username:
             st.error("닉네임을 입력해주세요.")
             return
+        if not password:
+            st.error("비밀번호를 입력해주세요.")
+            return
         data = {'username': username, 'password': password}
         response = requests.post(url + app_url + '/login/', data=data)
         if response.ok: # 상태코드가 400보다 작으면 True 반환. response.status_code로 확인.
             result = response.json()
             if result['success']:
                 st.success("로그인 성공")
-                token_response = requests.post(url + 'api/token/', data=data) # 전달한 username, password를 인증정보로 갖는 simple_jwt 발급 
-                token = token_response.get('access') # token_response = {"access":<토큰값>, "refresh":<토큰값}
-                save_token(token)
-                st.success("서버에서 토큰을 성공적으로 받아와 세션 상태에 저장했습니다.")
+                token_response = requests.post(url + '/api/token/', data=data).json() # 사용자의 username를 인증정보로 갖는 jwt 토큰 발급
+                print(f'발급 토큰 : {token_response}')
+                save_token(token_response['access'], token_response['refresh'])
+                st.success("서버에서 토큰을 성공적으로 받아와 저장했습니다.")
                 st.page_link("pages/1_main_page.py", label="메인 페이지 이동", icon="👐🏻")
-
                 username_input.empty()  # 닉네임 입력 필드 제거
+                pw_input.empty() # 비밀번호 입력 필드 제거
                 login_button.empty()  # 로그인 버튼 제거
                 header.empty()
-                              
             else:
                 st.error("존재하지 않는 이름입니다.")
         else:
             st.error("존재하지 않는 이름입니다. 회원가입을 진행해주세요.")
+
 
 # 로그아웃
 # def logout():
