@@ -48,6 +48,17 @@ def refresh_token():
     else:
         st.error("토큰 새로고침 실패: 유효 토큰이 없습니다.")
 
+# 토큰 검증
+# 입력된 토큰이 유효하면 empty dictionary{}를, 유효하지 않다면 {"detail", "code"}를 반환
+def verify_token():
+    token = load_token()
+    if token:
+        response = requests.post(url + '/api/token/verify/', data={'token': token})
+        if response.ok:
+            return True
+        else:
+            return False
+        
 def is_user_logged_in():
     # 세션 상태에 토큰이 있는지 확인하는 함수
     return 'token' in st.session_state
