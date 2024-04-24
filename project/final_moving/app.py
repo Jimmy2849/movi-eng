@@ -29,6 +29,16 @@ def load_token():
     if 'access' in localS.getAll():
         st.session_state.token = localS.getItem('access')
         return st.session_state.token
+    if 'userid' in localS.getAll():
+        st.session_state.userid = localS.getItem('userid')
+    session_init = st.session_state.storage_init
+    keys = session_init.keys()
+    if 'access' in keys:
+        st.session_state.token = session_init['access']
+    if 'verified' in keys:
+        st.session_state.verified = session_init['verified']
+    if 'userid' in keys:
+        st.session_state.userid = session_init['userid']
     return None
 
 # 토큰 갱신
@@ -68,6 +78,8 @@ def delete_token():
         del st.session_state.token
     if 'verified' in st.session_state:
         del st.session_state.verified
+    if 'userid' in st.session_state:
+        del st.session_state.userid
 
 # 인증 만료된 토큰 전송 시
 _ = '''{
@@ -91,10 +103,14 @@ def jwt_auth():
         headers = {'Authorization': f'Bearer {token}'}
         response = requests.post(url + '/my-protected-view/', headers=headers)
         if response.ok:
-            st.success('토큰 인증 완료')
-            if 'verified' not in localS.getAll():
+            result = response.json()
+            if result['success']:
+                st.success('토큰 인증 완료')
+                if 'userid' not in localS.getAll():
+                    localS.setItem('userid', result['userid'])
+                if 'verified' not in localS.getAll():
                     localS.setItem('verified', True)
-            return True
+                return True
         else:
             is_refreshed = refresh_token()
             st.write(f"토큰 재발급 중...{is_refreshed}")
@@ -158,6 +174,7 @@ def UserLogin():
         if response.ok: # 상태코드가 400보다 작으면 True 반환. response.status_code로 확인.
             result = response.json()
             if result['success']:
+                localS.setItem('userid', result['userid'])
                 token_response = requests.post(url + '/api/token/', data=data).json() # 사용자의 username를 인증정보로 갖는 jwt 토큰 발급
                 save_token(token_response['access'], token_response['refresh'])
                 st.success("로그인 성공")
