@@ -77,7 +77,7 @@ def save_word(request):
 def count_word(request):
     if request.method == 'POST':
         userid = request.POST.get('userid')
-        queryset = Dictionary.objects.filter(user_id=userid)
+        queryset = Dictionary.objects.filter(userid=userid)
         count_all = queryset.count()
         count_today = queryset.filter(creationDate=datetime.today()).count()
         not_learned = queryset.filter(learned=False).count()

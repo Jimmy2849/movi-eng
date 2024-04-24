@@ -10,8 +10,8 @@ class MyProtectedView(APIView):
     def post(self, request):
         try:
             # request.user에 접근하여 토큰 검증
-            user = request.user
-            content = {'success': True}
+            userid = request.user.id
+            content = {'success': True, 'userid': userid}
             return Response(content, status=200)
         except Exception as e:
             # JWT 토큰 검증 실패 시
