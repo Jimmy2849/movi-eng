@@ -1,0 +1,11 @@
+# Environments & Cache & Image
+.env
+.venv
+env/
+venv/
+myvenv/
+ENV/
+env.bak/
+venv.bak/
+__pycache__/
+project/final_moving/image/
