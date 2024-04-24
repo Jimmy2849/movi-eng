@@ -95,14 +95,13 @@ def jwt_auth():
                 localS.setItem('verified', True)
             return True
         else:
-            st.write("리프레시 중...")
-            return refresh_token()
+            is_refreshed = refresh_token()
+            st.write(f"토큰 재발급 중...{is_refreshed}")
+            return is_refreshed
     return False
 
 # 현재 세션에 토큰이 존재하는지 확인
 def is_user_logged_in():
-    st.write(st.session_state)
-    st.write(localS.getAll())
     verified = localS.getItem('verified')
     if verified is not None:
         st.session_state.verified = verified
@@ -201,8 +200,7 @@ def UserLogout():
 def main():
     # 가져올 토큰이 있고, 검증을 하지 않았다면 jwt 인증 실행
     if load_token() and 'verified' not in st.session_state:
-        st.write("인증수행중...")
-        st.write(jwt_auth())
+        jwt_auth()
     option = st.sidebar.selectbox(
         'Menu',
         ('로그인', '회원가입'))
