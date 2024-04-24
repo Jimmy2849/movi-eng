@@ -6,30 +6,25 @@ from streamlit_local_storage import LocalStorage
 url = "http://localhost:3000"  # 장고 서버 URL
 app_url = '/db'
 
-
 st.set_page_config(
     page_title="Hello",
     page_icon="👋",
 )
 
 # 로컬 스토리지 : https://pypi.org/project/streamlit-local-storage/
-@st.cache_resource
+@st.cache_resource(experimental_allow_widgets=True)
 def LocalStorageManager():
     return LocalStorage()
-localS = LocalStorageManager()  
+localS = LocalStorageManager()
 
 # 토큰 저장
-def save_token(access, refresh):
-    if 'token' not in st.session_state:
-        st.session_state.token = None   
+def save_token(access, refresh):  
     st.session_state.token = access
     localS.setItem('access', access, key='access_token')
     localS.setItem('refresh', refresh, key='refresh_token')
 
 # 토큰 불러오기
 def load_token():
-    if 'token' not in st.session_state:
-        st.session_state.token = None
     if 'access' in localS.getAll():
         st.session_state.token = localS.getItem('access')
         return st.session_state.token
@@ -46,29 +41,69 @@ def refresh_token():
             new_refresh = result['refresh']
             save_token(new_access, new_refresh)
             st.success("새로운 토큰 발급 성공")
-    else:
-        st.error("토큰 새로고침 실패: 유효 토큰이 없습니다.")
-
-# 토큰 검증
-# 입력된 토큰이 유효하면 empty dictionary{}를, 유효하지 않다면 {"detail", "code"}를 반환
+            if 'verified' not in localS.getAll():
+                localS.setItem('verified', True)
+            return True
+    return False
+    
+# 토큰 검증 및 갱신
+# TokenVerify는 입력된 토큰이 유효하면 empty dictionary{}를, 유효하지 않다면 {"detail", "code"}를 반환
+# 토큰의 갱신은 현재 세션이 토큰을 가지나, 만료되었을 때만 실행
+_ = ''' @st.cache_data
 def verify_token():
-    token = load_token()
-    if token:
-        response = requests.post(url + '/api/token/verify/', data={'token': token})
+    if 'token' in st.session_state:
+        response = requests.post(url + '/api/token/verify/', data={'token': st.session_state.token})
         if response.ok:
             return True
         else:
-            return False
+            return refresh_token()
+    return False '''
         
 # 토큰 삭제(로그아웃 시)
 def delete_token():
     # st.cache_resource.clear()
     localS.deleteAll()
-    del st.session_state.token
+    if 'token' in st.session_state:
+        del st.session_state.token
+    if 'verified' in st.session_state:
+        del st.session_state.verified
 
+# 인증 만료된 토큰 전송 시
+_ = '''{
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+        {
+            "token_class": "AccessToken",
+            "token_type": "access",
+            "message": "Token is invalid or expired"
+        }
+    ]
+}'''
+# 인증 성공 시
+_ = '''{
+    "success": true
+}'''
+def jwt_auth():
+    token = st.session_state.token
+    if token is not None:
+        headers = {'Authorization': f'Bearer {token}'}
+        response = requests.post(url + '/my-protected-view/', headers=headers)
+        if response.ok:
+            st.success('토큰 인증 완료')
+            if 'verified' not in localS.getAll():
+                localS.setItem('verified', True)
+            return True
+        else:
+            return refresh_token()
+    return False
+
+# 현재 세션에 토큰이 존재하는지 확인
 def is_user_logged_in():
-    # 세션 상태에 토큰이 있는지 확인하는 함수
-    return 'token' in st.session_state and st.session_state.token is not None
+    verified = localS.getItem('verified')
+    if verified is not None:
+        st.session_state.verified = verified
+    return 'token' in st.session_state and st.session_state.verified
 
 # 회원가입 
 def userJoin():
@@ -115,6 +150,7 @@ def UserLogin():
             result = response.json()
             if result['success']:
                 token_response = requests.post(url + '/api/token/', data=data).json() # 사용자의 username를 인증정보로 갖는 jwt 토큰 발급
+                print(f'token_response : {token_response}')
                 save_token(token_response['access'], token_response['refresh'])
                 st.success("로그인 성공")
                 st.success("서버에서 토큰을 성공적으로 받아와 저장했습니다.")
@@ -123,7 +159,6 @@ def UserLogin():
                 username_input.empty()  # 닉네임 입력 필드 제거
                 pw_input.empty() # 비밀번호 입력 필드 제거
                 login_button.empty()  # 로그인 버튼 제거
-                st.experimental_rerun()
             else:
                 st.error("존재하지 않는 이름입니다.")
         else:
@@ -161,19 +196,19 @@ def UserLogout():
 
 # 메인 실행
 def main():
-    token = load_token()
-    if token:
-        headers = {'Authorization': f'Bearer {token}'}
-        response = requests.post(url + '/my-protected-view/', headers=headers)
-    
+    # 가져올 토큰이 있고, 검증을 하지 않았다면 jwt 인증 실행
+    if load_token() and 'verified' not in st.session_state:
+        jwt_auth()
     option = st.sidebar.selectbox(
         'Menu',
         ('로그인', '회원가입'))
-    logout_button = st.sidebar.empty()
-    logout_button.button('로그아웃', on_click=UserLogout, disabled=not is_user_logged_in())
+
     if option == '로그인':
-        if is_user_logged_in():
+        logged_in = is_user_logged_in()
+        if logged_in:
             # 로그인이 되어있는 경우
+            logout_button = st.sidebar.empty()
+            logout_button.button('로그아웃', on_click=UserLogout, disabled=not logged_in)
             st.success("이미 로그인되었습니다.")
             st.page_link("pages/1_main_page.py", label="메인 페이지 이동", icon="👐🏻")
         else:
