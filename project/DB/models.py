@@ -17,7 +17,7 @@ class User(models.Model):
 """        
 
 class Dictionary(models.Model):
-    word = models.CharField(max_length=20)
+    word = models.CharField(max_length=30, unique=True)
     meaning = models.CharField(max_length=200)
     creationDate = models.DateField(auto_now_add=True)
     learned = models.BooleanField(default=False)
