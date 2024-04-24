@@ -12,7 +12,8 @@ st.set_page_config(
 )
 
 # 로컬 스토리지 : https://pypi.org/project/streamlit-local-storage/
-@st.cache_resource(experimental_allow_widgets=True)
+# 캐시 사용 시 페이지 전환 후 불러올 때 문제 발생
+# @st.cache_resource(experimental_allow_widgets=True)
 def LocalStorageManager():
     return LocalStorage()
 localS = LocalStorageManager()
@@ -92,13 +93,19 @@ def jwt_auth():
         if response.ok:
             st.success('토큰 인증 완료')
             if 'verified' not in localS.getAll():
-                localS.setItem('verified', True)
+                    localS.setItem('verified', True)
             return True
         else:
             is_refreshed = refresh_token()
             st.write(f"토큰 재발급 중...{is_refreshed}")
             return is_refreshed
     return False
+
+# 가져올 토큰이 있고, 검증이 완료되지 않았다면 인증 실행
+def auto_login():
+    if load_token() and 'verified' not in st.session_state:
+        jwt_auth()
+    return
 
 # 현재 세션에 토큰이 존재하는지 확인
 def is_user_logged_in():
@@ -152,7 +159,6 @@ def UserLogin():
             result = response.json()
             if result['success']:
                 token_response = requests.post(url + '/api/token/', data=data).json() # 사용자의 username를 인증정보로 갖는 jwt 토큰 발급
-                print(f'token_response : {token_response}')
                 save_token(token_response['access'], token_response['refresh'])
                 st.success("로그인 성공")
                 st.success("서버에서 토큰을 성공적으로 받아와 저장했습니다.")
@@ -198,25 +204,25 @@ def UserLogout():
 
 # 메인 실행
 def main():
-    # 가져올 토큰이 있고, 검증을 하지 않았다면 jwt 인증 실행
-    if load_token() and 'verified' not in st.session_state:
-        jwt_auth()
+
+    auto_login()
+
     option = st.sidebar.selectbox(
         'Menu',
         ('로그인', '회원가입'))
 
     if option == '로그인':
-        logged_in = is_user_logged_in()
-        if logged_in:
+        if logged_in:= is_user_logged_in():
             # 로그인이 되어있는 경우
             logout_button = st.sidebar.empty()
             logout_button.button('로그아웃', on_click=UserLogout, disabled=not logged_in)
-            st.success("이미 로그인되었습니다.")
+            st.success("현재 로그인 상태입니다.")
             st.page_link("pages/1_main_page.py", label="메인 페이지 이동", icon="👐🏻")
         else:
             UserLogin()
     if option == '회원가입':
-        logout_button.empty()
+        if is_user_logged_in():
+            UserLogout()
         userJoin()
 
 if __name__ == "__main__":
