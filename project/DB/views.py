@@ -36,6 +36,7 @@ def custom_login(request):
         if user is not None:
             # 사용자를 로그인합니다.
             login(request, user)
+            userid = request.user.id
             return JsonResponse({'success': True, 'userid': userid}, status=200)
         else:
             return JsonResponse({'success': False, 'error': 'Invalid ID.'}, status=400)
